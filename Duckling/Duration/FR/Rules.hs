@@ -92,6 +92,28 @@ ruleDurationEnviron = Rule
       _ -> Nothing
   }
 
+ruleTrimestres :: Rule
+ruleTrimestres = Rule
+  { name = "trimestre"
+  , pattern =
+    [ regex "trimestres?"
+    ]
+  , prod = \_ -> Just . Token Duration $ duration TG.Quarter 1
+  }
+
+ruleLeCycle :: Rule
+ruleLeCycle = Rule
+  { name = "le <cycle>"
+  , pattern =
+    [ regex "l[ae']? ?"
+    , dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+      (_:Token TimeGrain grain:_) ->
+        Just . Token Duration $ duration grain 1
+      _ -> Nothing
+  }
+
 rules :: [Rule]
 rules =
   [ ruleUneUnitofduration
@@ -100,4 +122,6 @@ rules =
   , ruleTroisQuartsDHeure
   , ruleDurationEnviron
   , ruleNumeralQuotes
+  , ruleTrimestres
+  , ruleLeCycle
   ]
