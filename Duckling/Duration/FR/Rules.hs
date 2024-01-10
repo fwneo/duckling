@@ -21,6 +21,8 @@ import qualified Duckling.Numeral.Types as TNumeral
 import Duckling.Regex.Types
 import qualified Duckling.TimeGrain.Types as TG
 import Duckling.Types
+import Duckling.Time.Helpers (isIntegerBetween)
+import Duckling.Time.Helpers (getIntValue)
 
 ruleNumeralQuotes :: Rule
 ruleNumeralQuotes = Rule
@@ -114,6 +116,21 @@ ruleLeCycle = Rule
       _ -> Nothing
   }
 
+ruleNDerniersCycle :: Rule
+ruleNDerniersCycle = Rule
+  { name = "n derniers <cycle>"
+  , pattern =
+    [ Predicate $ isIntegerBetween 2 9999
+    , regex "derni(e|è|é)re?s?"
+    , dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+      (token:_:Token TimeGrain grain:_) -> do
+        n <- getIntValue token
+        Just . Token Duration $ duration grain n
+      _ -> Nothing
+  }
+
 rules :: [Rule]
 rules =
   [ ruleUneUnitofduration
@@ -122,6 +139,7 @@ rules =
   , ruleTroisQuartsDHeure
   , ruleDurationEnviron
   , ruleNumeralQuotes
+  , ruleNDerniersCycle
   , ruleTrimestres
   , ruleLeCycle
   ]
