@@ -228,6 +228,28 @@ ruleHoursAndMinutes = Rule
       _ -> Nothing
   }
 
+
+ruleLastYear :: Rule
+ruleLastYear = Rule
+  { name = "vorjahr"
+  , pattern = 
+    [ regex "vorjahr"
+    ]
+  , prod = \_ -> Just . Token Duration $ duration TG.Year 1
+  }
+
+ruleCycle :: Rule
+ruleCycle = Rule 
+  { name = "<cycle>"
+  , pattern =
+    [ 
+      dimension TimeGrain
+    ]
+  , prod = \case
+    (Token TimeGrain grain:_) -> Just . Token Duration $ duration grain 1
+    _ -> Nothing
+  }
+
 rules :: [Rule]
 rules =
   [ ruleQuarterOfAnHour
@@ -246,4 +268,6 @@ rules =
   , ruleCompositeDurationAnd
   , ruleHoursAndMinutes
   , ruleAndHalfMinute
+  , ruleLastYear
+  , ruleCycle  -- must be last condition
   ]
