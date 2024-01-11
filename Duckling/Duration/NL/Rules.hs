@@ -159,6 +159,19 @@ ruleDurationPrecision = Rule
         _ -> Nothing
   }
 
+
+ruleCycle :: Rule
+ruleCycle = Rule
+  { name = "<cycle>"
+  , pattern =
+    [
+      dimension TimeGrain
+    ]
+  , prod = \case
+    (Token TimeGrain grain:_) -> Just . Token Duration $ duration grain 1
+    _ -> Nothing
+  }
+
 rules :: [Rule]
 rules =
   [ ruleDurationQuarterOfAnHour
@@ -172,4 +185,5 @@ rules =
   , ruleDurationOneAndHalfHour
   , ruleDurationPrecision
   , ruleNumeralQuotes
+  , ruleCycle -- Keep this as the last rule
   ]
