@@ -131,6 +131,20 @@ ruleNDerniersCycle = Rule
       _ -> Nothing
   }
 
+ruleNCycle :: Rule
+ruleNCycle = Rule
+  { name = "n <cycle>"
+  , pattern =
+    [ Predicate isNatural
+    , dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+      (token:_:Token TimeGrain grain:_) -> do
+        n <- getIntValue token
+        Just . Token Duration $ duration grain n
+      _ -> Nothing
+  }
+
 rules :: [Rule]
 rules =
   [ ruleUneUnitofduration
@@ -140,6 +154,7 @@ rules =
   , ruleDurationEnviron
   , ruleNumeralQuotes
   , ruleNDerniersCycle
+  , ruleNCycle
   , ruleTrimestres
   , ruleLeCycle
   ]

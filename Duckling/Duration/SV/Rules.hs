@@ -25,6 +25,7 @@ import Duckling.Regex.Types
 import Duckling.Types
 import qualified Duckling.Numeral.Types as TNumeral
 import qualified Duckling.TimeGrain.Types as TG
+import Duckling.Time.Helpers (getIntValue)
 
 ruleHalfAnHour :: Rule
 ruleHalfAnHour = Rule
@@ -116,6 +117,30 @@ ruleExactlyDuration = Rule
       _ -> Nothing
   }
 
+ruleCurrentLastCycle :: Rule
+ruleCurrentLastCycle = Rule
+  { name = "current/last <cycle>"
+  , pattern =
+    [ regex "senaste|aktuell(t|a)?"
+    , dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+      (_:Token TimeGrain grain:_) -> Just . Token Duration $ duration grain 1
+      _ -> Nothing
+  }
+
+ruleCycle :: Rule
+ruleCycle = Rule 
+  { name = "<cycle>"
+  , pattern =
+    [ 
+      dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+    (Token TimeGrain grain:_) -> Just . Token Duration $ duration grain 1
+    _ -> Nothing
+  }
+
 rules :: [Rule]
 rules =
   [ ruleAUnitofduration
@@ -125,4 +150,6 @@ rules =
   , ruleIntegerAndAnHalfHours
   , ruleIntegerMoreUnitofduration
   , ruleNumeralnumberHours
+  , ruleCurrentLastCycle
+  , ruleCycle -- Keep this as last rule
   ]
