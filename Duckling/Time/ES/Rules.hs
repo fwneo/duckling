@@ -18,7 +18,7 @@ import Prelude
 import qualified Data.Text as Text
 
 import Duckling.Dimensions.Types
-import Duckling.Duration.Helpers (isGrain)
+import Duckling.Duration.Helpers (isGrain, isNatural)
 import Duckling.Numeral.Helpers (parseInt)
 import Duckling.Ordinal.Types (OrdinalData(..))
 import Duckling.Regex.Types
@@ -181,6 +181,48 @@ ruleUltimoDayofweekDeTime = Rule
         tt $ predLastOf td1 td2
       _ -> Nothing
   }
+
+
+ruleLastCycle :: Rule
+ruleLastCycle = Rule
+  { name = "last <cycle>"
+  , pattern =
+    [ regex "(ú|u)ltimos?"
+    , dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+      (_:Token TimeGrain grain:_) ->
+        tt . cycleNth grain $ - 1
+      _ -> Nothing
+  }
+
+ruleLastNCycle :: Rule
+ruleLastNCycle = Rule
+  { name = "last n <cycle>"
+  , pattern =
+    [ regex "(ú|u)ltim(a|o)s?"
+    , Predicate isNatural
+    , dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+      (_:token:Token TimeGrain grain:_) -> do
+        n <- getIntValue token
+        tt . cycleNth grain $ - n
+      _ -> Nothing
+  }
+
+ruleCycle :: Rule
+ruleCycle = Rule
+  { name = "<cycle>"
+  , pattern =
+    [ dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+      (Token TimeGrain grain:_) -> do
+        tt . cycleNth grain $ 0
+      _ -> Nothing
+  }
+
 
 ruleEntreDatetimeEtDatetimeInterval :: Rule
 ruleEntreDatetimeEtDatetimeInterval = Rule
@@ -1665,6 +1707,9 @@ rules =
   , ruleNextWeek
   , ruleNextWeekAlt
   , ruleYearByAddingThreeNumbers
+  , ruleLastNCycle
+  , ruleLastCycle
+  , ruleCycle  -- must be the last rule
   ]
   ++ ruleDaysOfWeek
   ++ ruleMonths

@@ -21,6 +21,8 @@ import qualified Duckling.Numeral.Types as TNumeral
 import Duckling.Regex.Types
 import qualified Duckling.TimeGrain.Types as TG
 import Duckling.Types
+import Duckling.Time.Helpers (isIntegerBetween)
+import Duckling.Time.Helpers (getIntValue)
 
 ruleNumeralQuotes :: Rule
 ruleNumeralQuotes = Rule
@@ -92,6 +94,57 @@ ruleDurationEnviron = Rule
       _ -> Nothing
   }
 
+ruleTrimestres :: Rule
+ruleTrimestres = Rule
+  { name = "trimestre"
+  , pattern =
+    [ regex "trimestres?"
+    ]
+  , prod = \_ -> Just . Token Duration $ duration TG.Quarter 1
+  }
+
+ruleLeCycle :: Rule
+ruleLeCycle = Rule
+  { name = "le <cycle>"
+  , pattern =
+    [ regex "l[ae']? ?"
+    , dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+      (_:Token TimeGrain grain:_) ->
+        Just . Token Duration $ duration grain 1
+      _ -> Nothing
+  }
+
+ruleNDerniersCycle :: Rule
+ruleNDerniersCycle = Rule
+  { name = "n derniers <cycle>"
+  , pattern =
+    [ Predicate $ isIntegerBetween 2 9999
+    , regex "derni(e|è|é)re?s?"
+    , dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+      (token:_:Token TimeGrain grain:_) -> do
+        n <- getIntValue token
+        Just . Token Duration $ duration grain n
+      _ -> Nothing
+  }
+
+ruleNCycle :: Rule
+ruleNCycle = Rule
+  { name = "n <cycle>"
+  , pattern =
+    [ Predicate isNatural
+    , dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+      (token:_:Token TimeGrain grain:_) -> do
+        n <- getIntValue token
+        Just . Token Duration $ duration grain n
+      _ -> Nothing
+  }
+
 rules :: [Rule]
 rules =
   [ ruleUneUnitofduration
@@ -100,4 +153,8 @@ rules =
   , ruleTroisQuartsDHeure
   , ruleDurationEnviron
   , ruleNumeralQuotes
+  , ruleNDerniersCycle
+  , ruleNCycle
+  , ruleTrimestres
+  , ruleLeCycle
   ]

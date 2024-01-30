@@ -476,7 +476,7 @@ ruleLastCycle :: Rule
 ruleLastCycle = Rule
   { name = "last <cycle>"
   , pattern =
-    [ regex "vorige?|afgelopen"
+    [ regex "laatste|vorige?|afgelopen"
     , dimension TimeGrain
     ]
   , prod = \tokens -> case tokens of
@@ -1057,6 +1057,19 @@ ruleThisCycle = Rule
       _ -> Nothing
   }
 
+ruleHuidigeCycle :: Rule
+ruleHuidigeCycle = Rule
+  { name = "this <cycle>"
+  , pattern =
+    [ regex "huidige?"
+    , dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+      (_:Token TimeGrain grain:_) -> tt $ cycleNth grain 0
+      _ -> Nothing
+  }
+
+
 ruleThisTime :: Rule
 ruleThisTime = Rule
   { name = "this <time>"
@@ -1590,6 +1603,7 @@ rules =
   , ruleHalfTotillbeforeIntegerHourofday
   , ruleQuarterAfterpastIntegerHourofday
   , ruleTimezone
+  , ruleHuidigeCycle
   ]
   ++ ruleInstants
   ++ ruleDaysOfWeek

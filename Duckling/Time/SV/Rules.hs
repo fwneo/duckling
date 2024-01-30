@@ -297,6 +297,21 @@ ruleTheDayofmonthNonOrdinal = Rule
       _ -> Nothing
   }
 
+ruleTheDayofmonthWithMonth :: Rule
+ruleTheDayofmonthWithMonth = Rule
+  { name = "the <day-of-month> <month>"
+  , pattern =
+    [ regex "den"
+    , Predicate isDOMInteger
+    , Predicate isAMonth
+    ]
+  , prod = \tokens -> case tokens of
+      (_:token:Token Time td:_) -> do
+        v <- getIntValue token
+        Token Time <$> intersectDOM td token
+      _ -> Nothing
+  }
+
 ruleCycleAfterTime :: Rule
 ruleCycleAfterTime = Rule
   { name = "<cycle> after <time>"
@@ -1711,6 +1726,7 @@ rules =
   , ruleTheCycleOfTime
   , ruleTheDayAfterTomorrow
   , ruleTheDayBeforeYesterday
+  , ruleTheDayofmonthWithMonth
   , ruleTheDayofmonthNonOrdinal
   , ruleTheDayofmonthOrdinal
   , ruleTheIdesOfNamedmonth

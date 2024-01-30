@@ -382,6 +382,7 @@ library
                      , Duckling.Duration.PL.Corpus
                      , Duckling.Duration.PL.Rules
                      , Duckling.Duration.PT.Corpus
+                     , Duckling.Duration.PT.Rules
                      , Duckling.Duration.RO.Corpus
                      , Duckling.Duration.RO.Rules
                      , Duckling.Duration.RU.Corpus

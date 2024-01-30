@@ -825,6 +825,29 @@ ruleAprsLeDayofmonth = Rule
       _ -> Nothing
   }
 
+ruleTrimestreDernier :: Rule
+ruleTrimestreDernier = Rule
+  { name = "trimestre dernier"
+  , pattern =
+    [ regex "trimestres? derni(è|e)r(e|s)?|pass(é|e)e?|pr(e|é)c(e|é)dente?|(d')? ?avant"
+    ]
+  , prod = \_ -> tt . cycleNth TG.Quarter $ - 1
+  }
+
+
+ruleDernierCycle :: Rule
+ruleDernierCycle = Rule
+  { name = "dernier <cycle>"
+  , pattern =
+    [ regex "derni(è|e)r(e|s)?|pass(é|e)e?|pr(e|é)c(e|é)dente?|(d')? ?avant"
+    , dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+      (Token TimeGrain grain:_) ->
+        tt . cycleNth grain $ - 1
+      _ -> Nothing
+  }
+
 ruleCycleDernier :: Rule
 ruleCycleDernier = Rule
   { name = "<cycle> dernier"
@@ -1270,6 +1293,19 @@ ruleCedansLeCycle = Rule
   { name = "ce|dans le <cycle>"
   , pattern =
     [ regex "(cet?t?e?s?)|(dans l[ae']? ?)"
+    , dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+      (_:Token TimeGrain grain:_) ->
+        tt $ cycleNth grain 0
+      _ -> Nothing
+  }
+
+ruleLeCycle :: Rule
+ruleLeCycle = Rule
+  { name = "le <cycle>"
+  , pattern =
+    [ regex "l[ae']? ?"
     , dimension TimeGrain
     ]
   , prod = \tokens -> case tokens of
@@ -1946,6 +1982,21 @@ ruleTimezone = Rule
       _ -> Nothing
   }
 
+
+ruleCeTrimestre :: Rule
+ruleCeTrimestre = Rule
+  { name = "ce trimestre"
+  , pattern =
+    [ regex "ce trimestres?"
+    ]
+  , prod = \tokens -> case tokens of
+      (_:x:_) -> do
+        tt $ cycleNthAfter True TG.Quarter 0 $
+          cycleNth TG.Year 0
+      _ -> Nothing
+  }
+
+
 ruleMonths :: [Rule]
 ruleMonths = mkRuleMonths
   [ ( "Janvier"   , "janvier|janv\\.?"          )
@@ -1991,6 +2042,9 @@ rules =
   , ruleCeTime
   , ruleCedansLeCycle
   , ruleCycleDernier
+  , ruleLeCycle
+  , ruleTrimestreDernier
+  , ruleDernierCycle
   , ruleCycleProchainsuivantdaprs
   , ruleDansDuration
   , ruleDatetimeDatetimeInterval

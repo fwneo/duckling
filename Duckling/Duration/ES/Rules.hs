@@ -21,6 +21,7 @@ import Duckling.Duration.Helpers
 import Duckling.Duration.Types (DurationData(..))
 import Duckling.Numeral.Types (NumeralData(..))
 import Duckling.Types
+import qualified Duckling.Time.Helpers as TimeHelpers
 import qualified Duckling.Duration.Types as TDuration
 import qualified Duckling.Numeral.Types as TNumeral
 import qualified Duckling.TimeGrain.Types as TG
@@ -88,6 +89,32 @@ ruleCompositeDuration = Rule
       _ -> Nothing
   }
 
+ruleNCycle :: Rule
+ruleNCycle = Rule
+  { name = "n <cycle>"
+  , pattern =
+    [ Predicate isNatural
+    , dimension TimeGrain
+    ]
+  , prod = \tokens -> case tokens of
+      (token:_:Token TimeGrain grain:_) -> do
+        n <- TimeHelpers.getIntValue token
+        Just . Token Duration $ duration grain n
+      _ -> Nothing
+  }
+
+ruleCycle :: Rule
+ruleCycle = Rule 
+  { name = "<cycle>"
+  , pattern =
+    [ 
+      dimension TimeGrain
+    ]
+  , prod = \case
+    (Token TimeGrain grain:_) -> Just . Token Duration $ duration grain 1
+    _ -> Nothing
+  }
+
 rules :: [Rule]
 rules =
   [ ruleDurationHalfOfAnHour
@@ -95,4 +122,6 @@ rules =
   , ruleDurationThreeQuartersOfAnHour
   , ruleCompositeDuration
   , ruleCompositeDurationCommasAnd
+  , ruleNCycle
+  , ruleCycle  -- must be last condition
   ]
