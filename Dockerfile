@@ -1,4 +1,4 @@
-FROM haskell:8-buster AS builder
+FROM haskell:9.0.2-buster AS builder
 
 RUN apt-get update -qq && \
   apt-get install -qq -y libpcre3 libpcre3-dev build-essential pkg-config --fix-missing --no-install-recommends && \
